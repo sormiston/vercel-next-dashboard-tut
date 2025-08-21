@@ -1,0 +1,3 @@
+Server-Side Visibility / Debuggability
+☐ How can we visualize network cascade / timings of API calls made at SSRequest time?  (recall the artificially slow fetchRevenue request)
+    ☐ How can we enrich SS logging, generally?
