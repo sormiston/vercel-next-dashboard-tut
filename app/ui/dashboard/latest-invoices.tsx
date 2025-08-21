@@ -3,8 +3,10 @@ import clsx from "clsx";
 import Image from "next/image";
 import { lusitana } from "@/app/ui/fonts";
 import { fetchLatestInvoices } from "@/app/lib/data";
+import { connection } from "next/server";
 
 export default async function LatestInvoices() {
+  connection(); // co-opt into request time dynamic rendering
   const latestInvoices = await fetchLatestInvoices();
   return (
     <div className="flex w-full flex-col md:col-span-4">
