@@ -33,7 +33,7 @@ export type InvoiceFormState = {
 const CreateInvoice = FormSchema.omit({ id: true, date: true });
 
 export async function createInvoice(
-  prevState: InvoiceFormState,
+  _prevState: InvoiceFormState,
   formData: FormData
 ) {
   try {
@@ -67,14 +67,26 @@ export async function createInvoice(
 }
 
 const UpdateInvoice = FormSchema.omit({ id: true, date: true });
-export async function updateInvoice(id: string, formData: FormData) {
+export async function updateInvoice(
+  _prevState: InvoiceFormState,
+  id: string,
+  formData: FormData
+) {
   try {
-    const { customerId, amount, status } = UpdateInvoice.parse({
+    const validatedFields = UpdateInvoice.safeParse({
       customerId: formData.get("customerId"),
       amount: formData.get("amount"),
       status: formData.get("status"),
     });
 
+    if (!validatedFields.success) {
+      return {
+        message: "Incomplete fields.  Failed to update invoice.",
+        errors: validatedFields.error.flatten().fieldErrors,
+      };
+    }
+
+    const { customerId, amount, status } = validatedFields.data;
     const amountInCents = amount * 100;
 
     await sql`
@@ -82,7 +94,9 @@ export async function updateInvoice(id: string, formData: FormData) {
       SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
       WHERE id = ${id}
     `;
-  } catch (error) {}
+  } catch (error) {
+    return { message: "Database Error: Failed to Create Invoice" };
+  }
 
   revalidatePath("/dashboard/invoices");
   redirect("/dashboard/invoices");
